@@ -1,33 +1,74 @@
-plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
-    id 'java'
-}
-
-group = 'com.sp.fc'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+buildscript {
+    ext {
+        springVersion = '2.7.3'
+        spring = 'org.springframework.boot'
+        lombok = 'org.projectlombok:lombok'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "$spring:spring-boot-gradle-plugin:$springVersion"
     }
 }
 
-repositories {
-    mavenCentral()
+allprojects {
+    group = 'com.sp.fc'
+    version = '0.0.1-SNAPSHOT'
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: spring
+    apply plugin: 'io.spring.dependency-management'
+
+
+
+    repositories {
+        mavenCentral()
+    }
+
+    configurations {
+//        developmentOnly
+        runtimeClasspath {
+            extendsFrom developmentOnly
+        }
+    }
+
+    dependencies {
+//        implementation "$spring:spring-boot-devtools"
+        implementation "$spring:spring-boot-starter-security"
+        testImplementation "$spring:spring-boot-starter-test"
+        compileOnly lombok
+        testCompileOnly lombok
+        annotationProcessor lombok
+        testAnnotationProcessor lombok
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+["comp", "web"].each {
+    def subProjectDir = new File(projectDir, it)
+    subProjectDir.eachDir { dir ->
+        def projectName = ":${it}-${dir.name}"
+        project(projectName) {
+            bootJar.enabled(false)
+            jar.enabled(true)
+        }
+    }
 }
+
+["server"].each {
+    def subProjectDir = new File(projectDir, it)
+    subProjectDir.eachDir { dir ->
+        def projectName = ":${it}-${dir.name}"
+        project(projectName) {
+
+        }
+    }
+}
+
+help.enabled(false)

@@ -1,0 +1,5 @@
+dependencies {
+    implementation("$spring:spring-boot-starter-web")
+
+    implementation project(":comp-common-utils")
+}
